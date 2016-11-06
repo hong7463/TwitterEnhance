@@ -15,6 +15,7 @@ import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.common.Constants;
 import com.codepath.apps.restclienttemplate.models.User;
 import com.codepath.apps.restclienttemplate.ui.profiledetails.ProfileDetailsActivity;
+import com.codepath.apps.restclienttemplate.ui.widgets.RoundCornorTransform;
 
 import org.parceler.Parcels;
 
@@ -50,7 +51,7 @@ public class UserListRecyclerAdapter extends RecyclerView.Adapter<UserListRecycl
     public void onBindViewHolder(UserListViewHolder holder, int position) {
         final User user = users.get(position);
         Log.d(TAG, (context == null) + "");
-        Glide.with(context).load(user.getProfile_image_url()).into(holder.profileImg);
+        Glide.with(context).load(user.getProfile_image_url()).centerCrop().into(holder.profileImg);
         holder.name.setText(user.getName());
         holder.screenName.setText("@" + user.getAtName());
         holder.view.setOnClickListener(new View.OnClickListener() {

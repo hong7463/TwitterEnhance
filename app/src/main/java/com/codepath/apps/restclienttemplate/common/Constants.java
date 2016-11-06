@@ -13,4 +13,5 @@ public class Constants {
     public static final String PROFILE = "profile";
     public static final String REQUEST_FOR_FOLLOWERS = "request_for_followers";
     public static final String SINCE_ID = "since_id";
+    public static final String FOLLOWER = "follower";
 }

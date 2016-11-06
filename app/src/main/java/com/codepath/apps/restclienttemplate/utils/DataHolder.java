@@ -33,4 +33,8 @@ public class DataHolder {
         return session.get(key);
     }
 
+    public void clear() {
+        session.clear();
+    }
+
 }

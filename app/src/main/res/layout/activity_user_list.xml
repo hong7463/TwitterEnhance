@@ -8,7 +8,14 @@
     android:orientation="vertical"
     tools:context="com.codepath.apps.restclienttemplate.ui.userlist.UserListActivity">
 
-    <include layout="@layout/toolbar"/>
+    <android.support.design.widget.AppBarLayout
+        android:elevation="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include layout="@layout/toolbar"/>
+    </android.support.design.widget.AppBarLayout>
+
 
     <FrameLayout
         android:id="@+id/container"

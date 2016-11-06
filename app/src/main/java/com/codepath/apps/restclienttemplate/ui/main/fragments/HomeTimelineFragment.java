@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.common.Constants;
@@ -48,6 +49,8 @@ public class HomeTimelineFragment extends Fragment implements ComposeDialog.Comp
     FloatingActionButton fab;
     @BindView(R.id.activity_main_timeline)
     SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
 
     private LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
     private List<Tweet> tweets = new ArrayList<>();
@@ -61,13 +64,13 @@ public class HomeTimelineFragment extends Fragment implements ComposeDialog.Comp
         ButterKnife.bind(this, view);
         initRecyclerView();
         initClickListener();
+        callTimeline();
         return view;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        callTimeline();
     }
 
     private void initClickListener() {
@@ -85,12 +88,14 @@ public class HomeTimelineFragment extends Fragment implements ComposeDialog.Comp
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                callAfterPost(tweets.get(0).getId());
+//                callAfterPost(tweets.get(0).getId());
+                callTimeline();
             }
         });
     }
 
     private void initRecyclerView() {
+        Log.d(TAG, "initiating recycler");
         adapter = new MainRecyclerAdapter(getActivity(), tweets);
         adapter.setFragmentManager(getFragmentManager());
         recyclerView.setLayoutManager(layoutManager);
@@ -128,6 +133,9 @@ public class HomeTimelineFragment extends Fragment implements ComposeDialog.Comp
 
     @Override
     public void callAfterPost(long since_id) {
+        if(!swipeRefreshLayout.isRefreshing()) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
         RequestParams params = new RequestParams();
         params.put("since_id", since_id);
         AppUtils.getClient().getHomeTimeline(params, new JsonHttpResponseHandler() {
@@ -140,26 +148,43 @@ public class HomeTimelineFragment extends Fragment implements ComposeDialog.Comp
                 if(swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                progressBar.setVisibility(View.GONE);
             }
         });
     }
 
     public void callTimeline() {
+        progressBar.setVisibility(View.VISIBLE);
         AppUtils.getClient().getHomeTimeline(0, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray json) {
+                progressBar.setVisibility(View.GONE);
                 Log.d(TAG, json.toString());
+                tweets.clear();
                 tweets.addAll(Tweet.fromJsonArray(json));
                 DataHolder.getInstance().put(Constants.SINCE_ID, tweets.get(0).getId());
                 adapter.notifyDataSetChanged();
-                Log.d(TAG, layoutManager.getItemCount() + "");
-                Log.d(TAG, adapter.getItemCount() + "");
+                if(swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.d(TAG, errorResponse.toString());
+
             }
         });
+    }
+
+    public List<Tweet> getTweets() {
+        return tweets;
+    }
+
+    public MainRecyclerAdapter getAdapter() {
+        return adapter;
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 }

@@ -1,5 +1,7 @@
 package com.codepath.apps.restclienttemplate.models;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,17 +22,9 @@ public class Tweet {
     String created;
     Entity entity;
     ExtendedEntity extendedEntity;
+    boolean favorite;
 
     public Tweet() {
-    }
-
-    public Tweet(long id, String text, User user, String created, Entity entity, ExtendedEntity extendedEntity) {
-        this.id = id;
-        this.text = text;
-        this.user = user;
-        this.created = created;
-        this.entity = entity;
-        this.extendedEntity = extendedEntity;
     }
 
     public long getId() {
@@ -81,6 +75,14 @@ public class Tweet {
         this.entity = entity;
     }
 
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
     @Override
     public String toString() {
         return "Tweet{" +
@@ -90,6 +92,7 @@ public class Tweet {
                 ", created='" + created + '\'' +
                 ", entity=" + entity +
                 ", extendedEntity=" + extendedEntity +
+                ", favorite=" + favorite +
                 '}';
     }
 
@@ -98,12 +101,17 @@ public class Tweet {
         try {
             tweet.setId(object.getLong("id"));
             tweet.setText(object.getString("text"));
-            tweet.setUser(User.fromJsonObject(object.getJSONObject("user")));
+            if(!object.isNull("favorited")) {
+                tweet.setFavorite(object.getBoolean("favorited"));
+            }
             tweet.setCreated(object.getString("created_at"));
+            tweet.setUser(User.fromJsonObject(object.getJSONObject("user")));
             tweet.setEntity(Entity.fromJsonObject(object.getJSONObject("entities")));
-            tweet.setExtendedEntity(ExtendedEntity.fromJsonObject(object.getJSONObject("extended_entities")));
+            if(!object.isNull("extended_entities")) {
+                tweet.setExtendedEntity(ExtendedEntity.fromJsonObject(object.getJSONObject("extended_entities")));
+            }
         } catch (JSONException e) {
-            e.printStackTrace();
+            return tweet;
         }
         return tweet;
     }

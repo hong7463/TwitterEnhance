@@ -6,6 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.codepath.apps.restclienttemplate.common.Constants;
+import com.codepath.apps.restclienttemplate.ui.main.fragments.HomeTimelineFragment;
+import com.codepath.apps.restclienttemplate.utils.DataHolder;
 import com.codepath.apps.restclienttemplate.utils.FragmentFactory;
 
 /**
@@ -15,7 +17,7 @@ import com.codepath.apps.restclienttemplate.utils.FragmentFactory;
 public class MyFragmentPagerAdapter extends FragmentPagerAdapter {
 
     private static final int PAGE_COUNT = 2;
-    private String[] titles = {"Tab1", "Tab2"};
+    private String[] titles = {"Home", "Mentions"};
     private Context context;
 
     public MyFragmentPagerAdapter(FragmentManager fragmentManager, Context context) {
@@ -27,8 +29,10 @@ public class MyFragmentPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         switch (position) {
-            case 0 : {
-                return FragmentFactory.getFragment(Constants.HOME_TIMELINE_FRAGMENT);
+            case 0 : {;
+                Fragment fragment = FragmentFactory.getFragment(Constants.HOME_TIMELINE_FRAGMENT);
+                DataHolder.getInstance().put(Constants.HOME_TIMELINE_FRAGMENT, fragment);
+                return fragment;
             }
             case 1 : {
                 return FragmentFactory.getFragment(Constants.MENTION_TIMELINE_FRAGMENT);

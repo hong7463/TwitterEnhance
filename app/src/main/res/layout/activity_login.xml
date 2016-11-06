@@ -2,17 +2,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical"
     tools:context=".ui.login.LoginActivity" >
 
-    <Button
-        android:layout_gravity="center"
-        android:textColor="@android:color/white"
-        android:background="@drawable/button"
+    <android.support.design.widget.AppBarLayout
+        android:elevation="2dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
-        android:onClick="loginToRest"
-        android:text="@string/login_label" />
+        android:layout_height="wrap_content">
+
+        <include layout="@layout/toolbar"/>
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:textColor="@android:color/white"
+            android:background="@drawable/button"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:onClick="loginToRest"
+            android:text="@string/login_label" />
+
+    </LinearLayout>
+
 
 </LinearLayout>

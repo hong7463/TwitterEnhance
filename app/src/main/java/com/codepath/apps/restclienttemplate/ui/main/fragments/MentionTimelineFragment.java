@@ -3,6 +3,7 @@ package com.codepath.apps.restclienttemplate.ui.main.fragments;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -38,6 +39,8 @@ public class MentionTimelineFragment extends Fragment {
 
     @BindView(R.id.mention_timeline_recycler)
     RecyclerView recyclerView;
+    @BindView(R.id.swipe_layout)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     private List<Tweet> mentions = new ArrayList<>();
     private LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -68,6 +71,12 @@ public class MentionTimelineFragment extends Fragment {
                 getMoreMentions(mentions.get(mentions.size() - 1).getId() - 1);
             }
         });
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshMentions(mentions.get(0).getId());
+            }
+        });
     }
 
     private void getMoreMentions(long maxId) {
@@ -80,6 +89,19 @@ public class MentionTimelineFragment extends Fragment {
                 int start = mentions.size();
                 mentions.addAll(Tweet.fromJsonArray(array));
                 adapter.notifyItemRangeInserted(start, mentions.size());
+            }
+        });
+    }
+
+    private void refreshMentions(long sinceId) {
+        RequestParams params = new RequestParams();
+        params.put("since_id", sinceId);
+        AppUtils.getClient().getMentionTimeline(params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray array) {
+                mentions.addAll(0, Tweet.fromJsonArray(array));
+                adapter.notifyItemRangeInserted(0, array.length());
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
     }

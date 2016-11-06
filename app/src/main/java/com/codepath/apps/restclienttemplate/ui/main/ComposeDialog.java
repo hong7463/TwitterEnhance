@@ -106,8 +106,8 @@ public class ComposeDialog extends DialogFragment {
             AppUtils.getClient().postReply(params, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                    Log.d(TAG, statusCode + "");
-                    ((MainTimeline)getActivity()).callAfterPost(sinceId);
+                    Log.d(TAG, response.toString());
+                    ((HomeTimelineFragment) getTargetFragment()).callAfterPost(sinceId);
                     dismiss();
                 }
 

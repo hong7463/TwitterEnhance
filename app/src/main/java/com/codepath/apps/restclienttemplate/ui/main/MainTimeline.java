@@ -1,13 +1,17 @@
 package com.codepath.apps.restclienttemplate.ui.main;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,11 +28,14 @@ import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.common.Constants;
 import com.codepath.apps.restclienttemplate.models.Profile;
 import com.codepath.apps.restclienttemplate.models.Tweet;
+import com.codepath.apps.restclienttemplate.ui.login.LoginActivity;
 import com.codepath.apps.restclienttemplate.ui.main.adapters.MainRecyclerAdapter;
 import com.codepath.apps.restclienttemplate.ui.main.adapters.MyFragmentPagerAdapter;
+import com.codepath.apps.restclienttemplate.ui.main.fragments.HomeTimelineFragment;
 import com.codepath.apps.restclienttemplate.ui.profiledetails.ProfileDetailsActivity;
 import com.codepath.apps.restclienttemplate.utils.AppUtils;
 import com.codepath.apps.restclienttemplate.utils.DataHolder;
+import com.codepath.apps.restclienttemplate.utils.TwitterApplication;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
@@ -43,7 +50,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cz.msebera.android.httpclient.Header;
 
-public class MainTimeline extends AppCompatActivity implements ComposeDialog.ComposeFinishListener{
+public class MainTimeline extends AppCompatActivity {
 
     private static final String TAG = MainTimeline.class.getSimpleName();
 
@@ -63,6 +70,7 @@ public class MainTimeline extends AppCompatActivity implements ComposeDialog.Com
     private TextView followings;
     private ActionBarDrawerToggle toggle;
     private RecyclerView navRecycler;
+    private FragmentPagerAdapter fragmentAdapter;
 
     private List<Tweet> userTweets = new ArrayList<>();
     private MainRecyclerAdapter adapter = new MainRecyclerAdapter(this, userTweets);
@@ -74,19 +82,63 @@ public class MainTimeline extends AppCompatActivity implements ComposeDialog.Com
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_timeline);
+        ButterKnife.bind(this);
         setSupportActionBar(toolbar);
 
-        ButterKnife.bind(this);
-        toolbar.setTitle("test");
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open,  R.string.drawer_close);
         drawerLayout.addDrawerListener(toggle);
+        getSupportActionBar().setTitle("Twitter");
         findView();
         initUI();
         initTabLayout();
+        setUpNav();
+    }
+
+    private void setUpNav() {
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.profile: {
+                        Intent intent = new Intent(MainTimeline.this, ProfileDetailsActivity.class);
+                        intent.putExtra(Constants.PROFILE, Parcels.wrap(profile));
+                        startActivity(intent);
+                        drawerLayout.closeDrawers();
+                        break;
+                    }
+                    case R.id.log_out: {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainTimeline.this)
+                                .setTitle("Do you want to quit the app?")
+                                .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        TwitterApplication.getRestClient().clearAccessToken();
+                                        DataHolder.getInstance().clear();
+                                        Intent intent = new Intent(MainTimeline.this, LoginActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        MainTimeline.this.startActivity(intent);
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        builder.create().show();
+                        break;
+                    }
+                }
+                drawerLayout.closeDrawers();
+                return true;
+            }
+        });
     }
 
     private void initTabLayout() {
-        viewPager.setAdapter(new MyFragmentPagerAdapter(getSupportFragmentManager(), this));
+        fragmentAdapter = new MyFragmentPagerAdapter(getSupportFragmentManager(), this);
+        viewPager.setAdapter(fragmentAdapter);
         tabLayout.setupWithViewPager(viewPager);
     }
 
@@ -161,8 +213,8 @@ public class MainTimeline extends AppCompatActivity implements ComposeDialog.Com
     }
 
     @Override
-    public void onPostCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onPostCreate(savedInstanceState, persistentState);
+    public void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
         toggle.syncState();
     }
 
@@ -178,10 +230,5 @@ public class MainTimeline extends AppCompatActivity implements ComposeDialog.Com
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void callAfterPost(long sinceId) {
-
     }
 }
